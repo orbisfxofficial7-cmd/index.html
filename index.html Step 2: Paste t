@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VolatilityIQ | Deriv Analysis</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0b1020;
+      color: #eef2ff;
+      font-family: Arial, sans-serif;
+    }
+    main { max-width: 700px; margin: auto; }
+    h1 { color: #55e6a5; }
+    .card {
+      background: #151d30;
+      padding: 18px;
+      border-radius: 14px;
+      margin: 14px 0;
+      border: 1px solid #29344c;
+    }
+    .muted { color: #a8b3ca; }
+    .signal { font-size: 24px; font-weight: bold; }
+    button, select {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #3a4965;
+      background: #202c43;
+      color: white;
+      font-size: 16px;
+    }
+    button { cursor: pointer; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>VolatilityIQ</h1>
+  <p class="muted">Deriv market analysis dashboard</p>
+
+  <div class="card">
+    <h2>Market data</h2>
+    <p id="connection">Not connected to Deriv</p>
+    <label for="market">Select market:</label><br><br>
+    <select id="market">
+      <option value="R_10">Volatility 10 Index</option>
+      <option value="R_25">Volatility 25 Index</option>
+      <option value="R_50">Volatility 50 Index</option>
+      <option value="R_75">Volatility 75 Index</option>
+      <option value="R_100">Volatility 100 Index</option>
+    </select>
+    <button id="connect">Connect live data</button>
+    <p id="price">Price: waiting for data</p>
+  </div>
+
+  <div class="card">
+    <h2>Timeframe comparison</h2>
+    <p>Higher timeframe: <strong id="higher">Waiting for candles</strong></p>
+    <p>Lower timeframe: <strong id="lower">Waiting for candles</strong></p>
+    <p class="signal" id="signal">WAIT</p>
+    <p class="muted" id="reason">
+      No signal until real market data is received and compared.
+    </p>
+  </div>
+
+  <p class="muted">
+    Analysis tool only. Signals are not guarantees of future price movement.
+  </p>
+</main>
+
+<script>
+const connection = document.getElementById("connection");
+const price = document.getElementById("price");
+const signal = document.getElementById("signal");
+const reason = document.getElementById("reason");
+let socket;
+
+document.getElementById("connect").onclick = () => {
+  if (socket) socket.close();
+
+  connection.textContent = "Connecting...";
+  price.textContent = "Price: waiting for live ticks";
+  signal.textContent = "WAIT";
+  reason.textContent = "Collecting real market data.";
+
+  socket = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=1089");
+
+  socket.onopen = () => {
+    connection.textContent = "Connected; requesting market data...";
+    socket.send(JSON.stringify({
+      ticks: document.getElementById("market").value,
+      subscribe: 1
+    }));
+  };
+
+  socket.onmessage = event => {
+    const data = JSON.parse(event.data);
+
+    if (data.error) {
+      connection.textContent = "Data error: " + data.error.message;
+      return;
+    }
+
+    if (data.tick) {
+      connection.textContent = "Receiving live ticks";
+      price.textContent = "Live price: " + data.tick.quote;
+    }
+  };
+
+  socket.onerror = () => {
+    connection.textContent = "Connection error. Please try again.";
+  };
+
+  socket.onclose = () => {
+    if (connection.textContent === "Connecting...") {
+      connection.textContent = "Disconnected";
+    }
+  };
+};
+</script>
+</body>
+</html>
