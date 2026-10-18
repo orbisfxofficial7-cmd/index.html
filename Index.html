@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VolatilityIQ</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px;
+      background: #0b1020; color: #f1f5f9;
+      font-family: Arial, sans-serif;
+    }
+    main { max-width: 650px; margin: auto; }
+    h1 { color: #38bdf8; }
+    .card {
+      background: #151d30; padding: 18px;
+      border-radius: 14px; margin: 15px 0;
+    }
+    label { display: block; margin: 12px 0 6px; }
+    select, button {
+      width: 100%; padding: 12px; border-radius: 8px;
+      border: 1px solid #334155; font-size: 16px;
+    }
+    select { background: #0b1020; color: white; }
+    button {
+      background: #0284c7; color: white;
+      font-weight: bold; margin-top: 18px;
+    }
+    .muted { color: #94a3b8; line-height: 1.5; }
+    #result { font-size: 18px; font-weight: bold; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>VolatilityIQ</h1>
+  <p class="muted">Deriv market analysis • Multi-timeframe confirmation</p>
+
+  <section class="card">
+    <h3>Market setup</h3>
+    <label for="market">Market</label>
+    <select id="market">
+      <option value="Volatility 10 Index">Volatility 10 Index</option>
+      <option value="Volatility 25 Index">Volatility 25 Index</option>
+      <option value="Volatility 50 Index">Volatility 50 Index</option>
+      <option value="Volatility 75 Index">Volatility 75 Index</option>
+      <option value="Volatility 100 Index">Volatility 100 Index</option>
+    </select>
+
+    <label for="higher">Higher timeframe signal</label>
+    <select id="higher">
+      <option value="unknown">Not verified</option>
+      <option value="bullish">Bullish</option>
+      <option value="bearish">Bearish</option>
+      <option value="neutral">Neutral / unclear</option>
+    </select>
+
+    <label for="lower">Lower timeframe signal</label>
+    <select id="lower">
+      <option value="unknown">Not verified</option>
+      <option value="bullish">Bullish</option>
+      <option value="bearish">Bearish</option>
+      <option value="neutral">Neutral / unclear</option>
+    </select>
+
+    <label for="evidence">Evidence quality</label>
+    <select id="evidence">
+      <option value="weak">Weak / incomplete</option>
+      <option value="moderate">Moderate</option>
+      <option value="strong">Strong and verified</option>
+    </select>
+
+    <button onclick="analyze()">Analyze setup</button>
+  </section>
+
+  <section class="card">
+    <h3>Analysis result</h3>
+    <p id="result">WAIT — enter and verify your signals.</p>
+    <p id="details" class="muted">
+      No live market feed is connected yet.
+    </p>
+  </section>
+
+  <section class="card">
+    <h3>How it works</h3>
+    <p class="muted">
+      Matching signals mean both timeframes agree.
+      Conflicting signals mean they disagree.
+      Strong evidence still requires verified market
+      data and a valid entry setup. This tool does not
+      guarantee profitable trades.
+    </p>
+  </section>
+</main>
+
+<script>
+function analyze() {
+  const higher = document.getElementById("higher").value;
+  const lower = document.getElementById("lower").value;
+  const evidence = document.getElementById("evidence").value;
+  const market = document.getElementById("market").value;
+  const result = document.getElementById("result");
+  const details = document.getElementById("details");
+
+  if (higher === "unknown" || lower === "unknown" ||
+      higher === "neutral" || lower === "neutral") {
+    result.textContent = "WAIT — signals are unconfirmed.";
+  } else if (higher !== lower) {
+    result.textContent = "CONFLICT — timeframes disagree.";
+  } else if (evidence !== "strong") {
+    result.textContent = "WAIT — evidence is not strong enough.";
+  } else {
+    result.textContent =
+      "MATCH: " + higher.toUpperCase() +
+      " — confirmation only, not an entry signal.";
+  }
+
+  details.textContent =
+    "Market: " + market +
+    ". Higher timeframe: " + higher +
+    ". Lower timeframe: " + lower +
+    ". Evidence: " + evidence +
+    ". Live ticks are not connected; signals are manually entered.";
+}
+</script>
+</body>
+</html>
